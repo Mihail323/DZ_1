@@ -60,16 +60,6 @@ class Obstacles : Target_point
 class Agent
 {
     private double[] coordinates = new double[2];
-    private double[] Creat_Mass()
-    {
-        double[] mass = new double[2];
-        Random rand = new Random();
-        for (int i = 0; i < 2; i++)
-        {
-            mass[i] = rand.Next(0, 5);
-        }
-        return mass;
-    }
     public void set(double[] arr_point1)
     {
         coordinates = arr_point1;
@@ -95,9 +85,9 @@ class Agent
         else
             return false;
     }
-    public Agent()
+    public Agent(double[] arr_point1)
     {
-        set(Creat_Mass());
+        set(arr_point1);
     }
 }
 class Final_point :Agent
@@ -111,6 +101,8 @@ class Final_point :Agent
         }
         Console.WriteLine("");
     }
+    public Final_point(double[] arr_point1):base(arr_point1)
+    {}
 }
 class Field
 {
@@ -179,62 +171,13 @@ class project
 {
     static void Main()
     {
-        /* 
-        Target_point target_coordinates = new Target_point();
-        Obstacles obstacles_coordinates = new Obstacles();
-        Agent agent = new Agent();
-        Final_point final_point = new Final_point();
-        */
         Field field = new Field();
         Target_point target_coordinates = new Target_point(field.get(0), field.get(1), field.get(2));
         Obstacles obstacles_coordinates = new Obstacles(field.get(3), field.get(4), field.get(5));
+        Agent agent = new Agent(field.get(6));
+        Final_point final_point = new Final_point(field.get(7));
     }
 
 
 }
-//аналогичну агенту, разобрать наследование чтобы было проще, нужен скласс который будет сверять не находятсся какие-либо два объекта одновременно в одном месте
 // нужен сам алгоритм решения
-//подумать о реализации следующего метода в классе field генеррируется массив случайных чисел(обозначающих клетки на поле а потом он раскидывается каждому объекту)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//возможно оптимизация через списки
-/*Random rand1=new Random();
-
-double[,] kl,mn,ij;
-
-List<double[,]> list_mass=new List<double[,]>() {kl,mn,ij};
-
-foreach (double[,] mass in list_mass)
-
-{
-
-for( int i=0; i<2; i++)
-
-{
-
-for( int j=0; j<2; j++)
-
-{
-
-mass[i,j]=rand1.Next(1,5);
-
-}
-
-}
-
-}*/
