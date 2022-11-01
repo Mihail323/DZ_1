@@ -78,9 +78,9 @@ class Agent
         }
         Console.WriteLine("");
     }
-    public bool check(double i, double j)
+    public bool check(double[] mass)
     {
-        if ((i < 5 & i > -1) & (j < 5 & j > -1))
+        if ((mass[0] < 5 & mass[0] > -1) & (mass[1] < 5 & mass[1] > -1))
             return true;
         else
             return false;
@@ -167,6 +167,77 @@ class Field
         show();
     }
 }
+class Algoritm_A
+{
+    private double Calculation_heuristics(double[] trpt_1, double[] trpt_2, double[] trpt_3, double[] agent)
+    {
+        double h_result = 0;
+        double h1 = Dop_calculation(trpt_1, agent);
+        double h2 = Dop_calculation(trpt_2, agent);
+        double h3 = Dop_calculation(trpt_3, agent);
+        h_result = h1 + h2 + h3;
+        return h_result;
+    }
+    private double Calculation_heuristics(double[] fnipt, double[] agent)
+    {
+        double h = Dop_calculation(fnipt, agent); ;
+        return h;
+    }
+    private double Dop_calculation(double[] trpt_1, double[] agent)
+    {
+        double h = 0;
+        for (int i = 0; i < 2; i++)
+        {
+            double result = Math.Abs(trpt_1[i] - agent[i]);
+            h += result;
+        }
+        return h;
+    }
+    //direction= 1-Up, 2-right, 3-down, 4-left.
+    private void Step_priece(Agent agent,int direction, out int count_step, out double funct_tesult, out bool flag)
+    {
+        funct_tesult = 0;
+        double[] mass = agent.get();
+        switch(direction)
+        {
+            case 1:
+                {
+                    if (agent.check(new double[2] { mass[0], mass[1] + 1 }))
+                    {
+                        flag = true;
+
+                    }
+                    else
+                    {
+                        flag = false;
+                        count_step = count_step;
+                    }
+                    break;
+                }
+            case 2:
+                {
+
+                    break;
+                }
+            case 3:
+                {
+
+                    break;
+                }
+            case 4:
+                {
+
+                    break;
+                }
+        }
+
+
+    }
+    public Algoritm_A(double[] trpt_1, double[] trpt_2, double[] trpt_3, double[] obpt_1, double[] obpt_2, double[] obpt_3, double[] agent, double[] fnipt)
+    {
+
+    }
+}
 class project
 {
     static void Main()
@@ -180,4 +251,3 @@ class project
 
 
 }
-// нужен сам алгоритм решения
