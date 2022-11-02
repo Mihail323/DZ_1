@@ -78,13 +78,6 @@ class Agent
         }
         Console.WriteLine("");
     }
-    public bool check(double[] mass)
-    {
-        if ((mass[0] < 5 & mass[0] > -1) & (mass[1] < 5 & mass[1] > -1))
-            return true;
-        else
-            return false;
-    }
     public Agent(double[] arr_point1)
     {
         set(arr_point1);
@@ -169,12 +162,18 @@ class Field
 }
 class Algoritm_A
 {
-    private double Calculation_heuristics(double[] trpt_1, double[] trpt_2, double[] trpt_3, double[] agent)
+    private double Calculation_heuristics(double[] trpt_1, double[] trpt_2, double[] trpt_3, double[] agent, bool f1, bool f2, bool f3)
     {
         double h_result = 0;
-        double h1 = Dop_calculation(trpt_1, agent);
-        double h2 = Dop_calculation(trpt_2, agent);
-        double h3 = Dop_calculation(trpt_3, agent);
+        double h1 = 0;
+        double h2 = 0;
+        double h3 = 0;
+        if (f1 == false)
+            h1 = Dop_calculation(trpt_1, agent);
+        if (f2 == false)
+            h2 = Dop_calculation(trpt_2, agent);
+        if (f3 == false)
+            h3 = Dop_calculation(trpt_3, agent);
         h_result = h1 + h2 + h3;
         return h_result;
     }
@@ -193,49 +192,171 @@ class Algoritm_A
         }
         return h;
     }
-    //direction= 1-Up, 2-right, 3-down, 4-left.
-    private void Step_priece(Agent agent,int direction, out int count_step, out double funct_tesult, out bool flag)
+    private bool Сheck(double[] mass)
     {
-        funct_tesult = 0;
-        double[] mass = agent.get();
-        switch(direction)
+        if ((mass[0] < 5 & mass[0] > -1) & (mass[1] < 5 & mass[1] > -1))
+            return true;
+        else
+            return false;
+    }
+    private bool Checke(double[] obpt_1, double[] obpt_2, double[] obpt_3, double[] agent)
+    {
+        bool f = true;
+        List<double[]> list_obpt= new List<double[]>() { obpt_1, obpt_2, obpt_3};
+        foreach (var mass in list_obpt)
         {
-            case 1:
+            for (int i = 0; i < 3; i++)
+            {
+                if (agent[0] == mass[0] && agent[1] == mass[1])
                 {
-                    if (agent.check(new double[2] { mass[0], mass[1] + 1 }))
-                    {
-                        flag = true;
-
-                    }
-                    else
-                    {
-                        flag = false;
-                        count_step = count_step;
-                    }
+                    f = false;
                     break;
                 }
-            case 2:
-                {
-
-                    break;
-                }
-            case 3:
-                {
-
-                    break;
-                }
-            case 4:
-                {
-
-                    break;
-                }
+            }
         }
-
-
+        return f;
+    }
+    private Dictionary<int, double> Price_step(double[] obpt_1, double[] obpt_2, double[] obpt_3, double[] trpt_1, double[] trpt_2, double[] trpt_3, double[] agent, int count_step, bool f1, bool f2, bool f3)
+    {
+        Dictionary<int, double> Mass_step= new Dictionary<int, double>();
+        count_step++;
+        double f_t;
+        for (int i = 0; i < 4; i++)
+        {
+            double[] mass = new double[] { agent[0], agent[1] };
+            switch (i)
+            {
+                case 0:
+                   {
+                        if(Сheck(mass) & Checke(obpt_1, obpt_2, obpt_3, mass))
+                        {
+                            mass[1]++;
+                            f_t = count_step + Calculation_heuristics(trpt_1, trpt_2, trpt_3, mass,f1,f2,f3);
+                            Mass_step.Add(i, f_t);
+                        }
+                        break;
+                   }
+                case 1:
+                    {
+                        if (Сheck(mass) & Checke(obpt_1, obpt_2, obpt_3, mass))
+                        {
+                            mass[0]--;
+                            f_t = count_step + Calculation_heuristics(trpt_1, trpt_2, trpt_3, mass, f1, f2, f3);
+                            Mass_step.Add(i, f_t);
+                        }
+                        break;
+                    }
+                case 2:
+                    {
+                        if (Сheck(mass) & Checke(obpt_1, obpt_2, obpt_3, mass))
+                        {
+                            mass[1]--;
+                            f_t = count_step + Calculation_heuristics(trpt_1, trpt_2, trpt_3, mass, f1, f2, f3);
+                            Mass_step.Add(i, f_t);
+                        }
+                        break;
+                    }
+                case 3:
+                    {
+                        if (Сheck(mass) & Checke(obpt_1, obpt_2, obpt_3, mass))
+                        {
+                            mass[0]++;
+                            f_t = count_step + Calculation_heuristics(trpt_1, trpt_2, trpt_3, mass, f1, f2, f3);
+                            Mass_step.Add(i, f_t);
+                        }
+                        break;
+                    }
+            }
+        }
+        return Mass_step;
+    }
+    private int  Min_f(Dictionary<int, double> Mass_step)
+    {
+        double min_f = Mass_step[0];
+        int key=0;
+        for(int i=1; i<Mass_step.Count(); i++)
+        {
+            if (Mass_step[i]<min_f)
+            {
+                min_f = Mass_step[i];
+                key = i;
+            }
+        }
+        return key;
+    }
+    private void Reaching_trpt(double[] trpt_1, double[] trpt_2, double[] trpt_3, double[] agent,out bool f1, out bool f2, out bool f3)
+    {
+        if (trpt_1[0] == agent[0] & trpt_1[1] == agent[1])
+            f1 = true;
+        else
+            f1 = false;
+        if (trpt_2[0] == agent[0] & trpt_2[1] == agent[1])
+            f2 = true;
+        else
+            f2 = false;
+        if (trpt_3[0] == agent[0] & trpt_3[1] == agent[1])
+            f3 = true;
+        else
+            f3 = false;
+    }
+    private void show(List<string> result) 
+    {
+        Console.WriteLine("Ходы чтобы пройти все целевые точки: ");
+        foreach(var str in result)
+        {
+            Console.Write(" " + str);
+        }
     }
     public Algoritm_A(double[] trpt_1, double[] trpt_2, double[] trpt_3, double[] obpt_1, double[] obpt_2, double[] obpt_3, double[] agent, double[] fnipt)
     {
-
+        int count_step = 0;
+        Dictionary<int, double> Possibel_step = new Dictionary<int, double>();
+        List<string> Step_result = new List<string>();
+        bool f1=false, f2=false, f3 = false;
+        bool F = true;
+        while (F)
+        {
+            Possibel_step = Price_step(obpt_1, obpt_2, obpt_3, trpt_1, trpt_2, trpt_3, agent, count_step,f1,f2,f3);
+            int key_min_f=Min_f(Possibel_step);
+            switch(key_min_f)
+            {
+                case 0:
+                    {
+                        agent[1]++;
+                        Reaching_trpt(trpt_1, trpt_2, trpt_3, agent, out f1, out f2, out f3);
+                        Step_result.Add("Up");
+                        count_step++;
+                        break;
+                    }
+                case 1:
+                    {
+                        agent[0]--;
+                        Reaching_trpt(trpt_1, trpt_2, trpt_3, agent, out f1, out f2, out f3);
+                        Step_result.Add("Right");
+                        count_step++;
+                        break;
+                    }
+                case 2:
+                    {
+                        agent[1]--;
+                        Reaching_trpt(trpt_1, trpt_2, trpt_3, agent, out f1, out f2, out f3);
+                        Step_result.Add("Down");
+                        count_step++;
+                        break;
+                    }
+                case 3:
+                    {
+                        agent[0]++;
+                        Reaching_trpt(trpt_1, trpt_2, trpt_3, agent, out f1, out f2, out f3);
+                        Step_result.Add("Left");
+                        count_step++;
+                        break;
+                    }
+            }
+            if (f1 & f2 & f3)
+                F = true;
+        }
+        show(Step_result);
     }
 }
 class project
@@ -247,6 +368,7 @@ class project
         Obstacles obstacles_coordinates = new Obstacles(field.get(3), field.get(4), field.get(5));
         Agent agent = new Agent(field.get(6));
         Final_point final_point = new Final_point(field.get(7));
+        Algoritm_A algoritm = new Algoritm_A(field.get(0), field.get(1), field.get(2), field.get(3), field.get(4), field.get(5), field.get(6), field.get(7));
     }
 
 
