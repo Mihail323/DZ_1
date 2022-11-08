@@ -169,7 +169,7 @@ class Algoritm_A
 {
     private double Calculation_heuristics(double[] trpt_1, double[] trpt_2, double[] trpt_3, double[] agent, bool f1, bool f2, bool f3, double[] fnipt)
     {
-        double h_result = 0;
+        double h_result;
         double h1 = 0;
         double h2 = 0;
         double h3 = 0;
@@ -179,19 +179,16 @@ class Algoritm_A
             h2 = Dop_calculation(trpt_2, agent) + Dop_calculation(fnipt, trpt_2);
         if (f3 == false)
             h3 = Dop_calculation(trpt_3, agent) + Dop_calculation(fnipt, trpt_3);
-        h_result = h1 + h2 + h3-Dop_calculation(fnipt, agent); ;
+        h_result = h1 + h2 + h3 - Dop_calculation(fnipt, agent); ;
         return h_result;
     }
     private double Calculation_heuristics(double[] fnipt, double[] agent)
     {
-        double h = Dop_calculation(fnipt, agent); ;
-        return h;
+        return Dop_calculation(fnipt, agent);
     }
     private double Dop_calculation(double[] trpt_1, double[] agent)
     {
-        double h = 0;
-        h = Math.Abs(trpt_1[0] - agent[0]) + Math.Abs(trpt_1[1] - agent[1]);
-        return h;
+        return (Math.Abs(trpt_1[0] - agent[0]) + Math.Abs(trpt_1[1] - agent[1]));
     }
     private bool Сheck(double[] mass)
     {
@@ -214,6 +211,69 @@ class Algoritm_A
         }
         return f;
     }
+    private double[] Shift_agent(double[] agent, int i)
+    {
+        switch (i)
+        {
+            case 0:
+                {
+                    agent[1]++;
+                    break;
+                }
+            case 1:
+                {
+                    agent[0]--;
+                    break;
+                }
+            case 2:
+                {
+                    agent[1]--;
+                    break;
+                }
+            case 3:
+                {
+                    agent[0]++;
+                    break;
+                }
+        }
+        return agent;
+    }
+    private double[] Shift_agent(double[] agent, int i, out string step)
+    {
+        step = "0";
+        switch (i)
+        {
+            case 0:
+                {
+                    agent[1]++;
+                    Console.WriteLine("Up");
+                    step = "Up";
+                    break;
+                }
+            case 1:
+                {
+                    agent[0]--;
+                    Console.WriteLine("Right");
+                    step = "Right";
+                    break;
+                }
+            case 2:
+                {
+                    agent[1]--;
+                    Console.WriteLine("Down");
+                    step = "Down";
+                    break;
+                }
+            case 3:
+                {
+                    agent[0]++;
+                    Console.WriteLine("Left");
+                    step = "Left";
+                    break;
+                }
+        }
+        return agent;
+    }
     private Dictionary<int, double> Price_step(double[] obpt_1, double[] obpt_2, double[] obpt_3, double[] trpt_1, double[] trpt_2, double[] trpt_3, double[] agent, int count_step, bool f1, bool f2, bool f3, double[] fnipt)
     {
         Dictionary<int, double> Mass_step = new Dictionary<int, double>();
@@ -223,52 +283,12 @@ class Algoritm_A
         {
             double[] mass_agent = new double[] { agent[0], agent[1] };
             bool[] mass_f = new bool[] { f1, f2, f3 };
-            switch (i)
+            mass_agent = Shift_agent(mass_agent, i);
+            if (Сheck(mass_agent) & Checke(obpt_1, obpt_2, obpt_3, mass_agent))
             {
-                case 0:
-                    {
-                        mass_agent[1]++;
-                        if (Сheck(mass_agent) & Checke(obpt_1, obpt_2, obpt_3, mass_agent))
-                        {
-                            mass_f = Reaching_trpt(trpt_1, trpt_2, trpt_3, mass_agent, mass_f);
-                            f_t = count_step + Calculation_heuristics(trpt_1, trpt_2, trpt_3, mass_agent, mass_f[0], mass_f[1], mass_f[2], fnipt);
-                            Mass_step.Add(i, f_t);
-                        }
-                        break;
-                    }
-                case 1:
-                    {
-                        mass_agent[0]--;
-                        if (Сheck(mass_agent) & Checke(obpt_1, obpt_2, obpt_3, mass_agent))
-                        {
-                            mass_f = Reaching_trpt(trpt_1, trpt_2, trpt_3, mass_agent, mass_f);
-                            f_t = count_step + Calculation_heuristics(trpt_1, trpt_2, trpt_3, mass_agent, mass_f[0], mass_f[1], mass_f[2], fnipt);
-                            Mass_step.Add(i, f_t);
-                        }
-                        break;
-                    }
-                case 2:
-                    {
-                        mass_agent[1]--;
-                        if (Сheck(mass_agent) & Checke(obpt_1, obpt_2, obpt_3, mass_agent))
-                        {
-                            mass_f = Reaching_trpt(trpt_1, trpt_2, trpt_3, mass_agent, mass_f);
-                            f_t = count_step + Calculation_heuristics(trpt_1, trpt_2, trpt_3, mass_agent, mass_f[0], mass_f[1], mass_f[2], fnipt);
-                            Mass_step.Add(i, f_t);
-                        }
-                        break;
-                    }
-                case 3:
-                    {
-                        mass_agent[0]++;
-                        if (Сheck(mass_agent) & Checke(obpt_1, obpt_2, obpt_3, mass_agent))
-                        {
-                            mass_f = Reaching_trpt(trpt_1, trpt_2, trpt_3, mass_agent, mass_f);
-                            f_t = count_step + Calculation_heuristics(trpt_1, trpt_2, trpt_3, mass_agent, mass_f[0], mass_f[1], mass_f[2], fnipt);
-                            Mass_step.Add(i, f_t);
-                        }
-                        break;
-                    }
+                mass_f = Reaching_trpt(trpt_1, trpt_2, trpt_3, mass_agent, mass_f);
+                f_t = count_step + Calculation_heuristics(trpt_1, trpt_2, trpt_3, mass_agent, mass_f[0], mass_f[1], mass_f[2], fnipt);
+                Mass_step.Add(i, f_t);
             }
         }
         return Mass_step;
@@ -322,7 +342,7 @@ class Algoritm_A
     }
     private bool[] Reaching_trpt(double[] trpt_1, double[] trpt_2, double[] trpt_3, double[] agent, bool[] mass_f)
     {
-        if ((trpt_1[0] == agent[0] & trpt_1[1] == agent[1]) | mass_f[0]==true)
+        if ((trpt_1[0] == agent[0] & trpt_1[1] == agent[1]) | mass_f[0] == true)
             mass_f[0] = true;
         else
             mass_f[0] = false;
@@ -351,6 +371,8 @@ class Algoritm_A
         List<string> Step_result = new List<string>();
         bool[] mass_f = new bool[] { false, false, false };
         bool F = true;
+        string final_step;
+        //ручное задание координат
         trpt_1[0] = 1; trpt_1[1] = 4;
         trpt_2[0] = 2; trpt_2[1] = 2;
         trpt_3[0] = 4; trpt_3[1] = 3;
@@ -359,7 +381,6 @@ class Algoritm_A
         obpt_3[0] = 3; obpt_3[1] = 3;
         agent[0] = 2; agent[1] = 4;
         fnipt[0] = 1; fnipt[1] = 3;
-        
         while (F)
         {
             Possibel_step = Price_step(obpt_1, obpt_2, obpt_3, trpt_1, trpt_2, trpt_3, agent, count_step, mass_f[0], mass_f[1], mass_f[2], fnipt);
@@ -369,45 +390,10 @@ class Algoritm_A
                 Console.WriteLine("Хьюстон, у нас проблемы. Решение невозможно, агент007 в западне.");
                 break;
             }
-            switch (key_min_f)
-            {
-                case 0:
-                    {
-                        agent[1]++;
-                        mass_f=Reaching_trpt(trpt_1, trpt_2, trpt_3, agent, mass_f);
-                        Step_result.Add("Up");
-                        Console.WriteLine("Up");
-                        count_step++;
-                        break;
-                    }
-                case 1:
-                    {
-                        agent[0]--;
-                        mass_f=Reaching_trpt(trpt_1, trpt_2, trpt_3, agent, mass_f);
-                        Step_result.Add("Right");
-                        Console.WriteLine("Right");
-                        count_step++;
-                        break;
-                    }
-                case 2:
-                    {
-                        agent[1]--;
-                        mass_f=Reaching_trpt(trpt_1, trpt_2, trpt_3, agent, mass_f);
-                        Step_result.Add("Down");
-                        Console.WriteLine("Down");
-                        count_step++;
-                        break;
-                    }
-                case 3:
-                    {
-                        agent[0]++;
-                        mass_f = Reaching_trpt(trpt_1, trpt_2, trpt_3, agent, mass_f);
-                        Step_result.Add("Left");
-                        Console.WriteLine("Left");
-                        count_step++;
-                        break;
-                    }
-            }
+            agent = Shift_agent(agent, key_min_f,out final_step);
+            mass_f = Reaching_trpt(trpt_1, trpt_2, trpt_3, agent, mass_f);
+            Step_result.Add(final_step);
+            count_step++;
             if (mass_f[0] & mass_f[1] & mass_f[2])
                 F = false;
         }
