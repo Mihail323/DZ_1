@@ -38,7 +38,7 @@ class Target_point
     //конструктор для инициализации целевых точек и их координат 
     public Target_point(double[] arr_point1, double[] arr_point2, double[] arr_point3)
     {
-        set(arr_point1,arr_point2,arr_point3);
+        set(arr_point1, arr_point2, arr_point3);
     }
 }
 //класс препятствий
@@ -54,10 +54,12 @@ class Obstacles : Target_point
         }
         Console.WriteLine("");
     }
-    public Obstacles(double[] arr_point1, double[] arr_point2, double[] arr_point3): base(arr_point1, arr_point2, arr_point3)
+    public Obstacles(double[] arr_point1, double[] arr_point2, double[] arr_point3) : base(arr_point1, arr_point2, arr_point3)
     { }
 }
+//класс инициализации агента
 class Agent
+
 {
     private double[] coordinates = new double[2];
     public void set(double[] arr_point1)
@@ -83,7 +85,8 @@ class Agent
         set(arr_point1);
     }
 }
-class Final_point :Agent
+//класс инициализации ключевых точек
+class Final_point : Agent
 {
     private protected override void show(double[] mass)
     {
@@ -94,14 +97,15 @@ class Final_point :Agent
         }
         Console.WriteLine("");
     }
-    public Final_point(double[] arr_point1):base(arr_point1)
-    {}
+    public Final_point(double[] arr_point1) : base(arr_point1)
+    { }
 }
+//класс поле в котором происходит распределения местоположения всех объектов
 class Field
 {
     private int[] Array_point = new int[8];
     private Dictionary<int, double[]> Matrix = new Dictionary<int, double[]>()
-    { 
+    {
         { 0, new double[]{1, 1} },
         { 1, new double[]{2, 1} },
         { 2, new double[]{3, 1} },
@@ -134,14 +138,14 @@ class Field
             {
                 i--;
             }
-            else 
+            else
             {
                 cheked_dictonary.Add(i + 1, mass[i]);
             }
         }
         return mass;
     }
-    public double[] get(int i) 
+    public double[] get(int i)
     {
         return Matrix[Array_point[i]];
     }
@@ -154,27 +158,28 @@ class Field
         }
         Console.WriteLine();
     }
-    public Field() 
+    public Field()
     {
-        Array_point=Creat_Mass();
+        Array_point = Creat_Mass();
         show();
     }
 }
+//класс в котором реализуется весь алгоритм поиска пути
 class Algoritm_A
 {
-    private double Calculation_heuristics(double[] trpt_1, double[] trpt_2, double[] trpt_3, double[] agent, bool f1, bool f2, bool f3)
+    private double Calculation_heuristics(double[] trpt_1, double[] trpt_2, double[] trpt_3, double[] agent, bool f1, bool f2, bool f3, double[] fnipt)
     {
         double h_result = 0;
         double h1 = 0;
         double h2 = 0;
         double h3 = 0;
         if (f1 == false)
-            h1 = Dop_calculation(trpt_1, agent);
+            h1 = Dop_calculation(trpt_1, agent) + Dop_calculation(fnipt, trpt_1);
         if (f2 == false)
-            h2 = Dop_calculation(trpt_2, agent);
+            h2 = Dop_calculation(trpt_2, agent) + Dop_calculation(fnipt, trpt_2);
         if (f3 == false)
-            h3 = Dop_calculation(trpt_3, agent);
-        h_result = h1 + h2 + h3;
+            h3 = Dop_calculation(trpt_3, agent) + Dop_calculation(fnipt, trpt_3);
+        h_result = h1 + h2 + h3-Dop_calculation(fnipt, agent); ;
         return h_result;
     }
     private double Calculation_heuristics(double[] fnipt, double[] agent)
@@ -185,16 +190,12 @@ class Algoritm_A
     private double Dop_calculation(double[] trpt_1, double[] agent)
     {
         double h = 0;
-        for (int i = 0; i < 2; i++)
-        {
-            double result = Math.Abs(trpt_1[i] - agent[i]);
-            h += result;
-        }
+        h = Math.Abs(trpt_1[0] - agent[0]) + Math.Abs(trpt_1[1] - agent[1]);
         return h;
     }
     private bool Сheck(double[] mass)
     {
-        if ((mass[0] < 5 & mass[0] > -1) & (mass[1] < 5 & mass[1] > -1))
+        if ((mass[0] < 5 & mass[0] > 0) & (mass[1] < 5 & mass[1] > 0))
             return true;
         else
             return false;
@@ -202,66 +203,68 @@ class Algoritm_A
     private bool Checke(double[] obpt_1, double[] obpt_2, double[] obpt_3, double[] agent)
     {
         bool f = true;
-        List<double[]> list_obpt= new List<double[]>() { obpt_1, obpt_2, obpt_3};
+        List<double[]> list_obpt = new List<double[]>() { obpt_1, obpt_2, obpt_3 };
         foreach (var mass in list_obpt)
         {
-            for (int i = 0; i < 3; i++)
+            if (agent[0] == mass[0] && agent[1] == mass[1])
             {
-                if (agent[0] == mass[0] && agent[1] == mass[1])
-                {
-                    f = false;
-                    break;
-                }
+                f = false;
+                break;
             }
         }
         return f;
     }
-    private Dictionary<int, double> Price_step(double[] obpt_1, double[] obpt_2, double[] obpt_3, double[] trpt_1, double[] trpt_2, double[] trpt_3, double[] agent, int count_step, bool f1, bool f2, bool f3)
+    private Dictionary<int, double> Price_step(double[] obpt_1, double[] obpt_2, double[] obpt_3, double[] trpt_1, double[] trpt_2, double[] trpt_3, double[] agent, int count_step, bool f1, bool f2, bool f3, double[] fnipt)
     {
-        Dictionary<int, double> Mass_step= new Dictionary<int, double>();
+        Dictionary<int, double> Mass_step = new Dictionary<int, double>();
         count_step++;
         double f_t;
         for (int i = 0; i < 4; i++)
         {
-            double[] mass = new double[] { agent[0], agent[1] };
+            double[] mass_agent = new double[] { agent[0], agent[1] };
+            bool[] mass_f = new bool[] { f1, f2, f3 };
             switch (i)
             {
                 case 0:
-                   {
-                        if(Сheck(mass) & Checke(obpt_1, obpt_2, obpt_3, mass))
+                    {
+                        mass_agent[1]++;
+                        if (Сheck(mass_agent) & Checke(obpt_1, obpt_2, obpt_3, mass_agent))
                         {
-                            mass[1]++;
-                            f_t = count_step + Calculation_heuristics(trpt_1, trpt_2, trpt_3, mass,f1,f2,f3);
+                            mass_f = Reaching_trpt(trpt_1, trpt_2, trpt_3, mass_agent, mass_f);
+                            f_t = count_step + Calculation_heuristics(trpt_1, trpt_2, trpt_3, mass_agent, mass_f[0], mass_f[1], mass_f[2], fnipt);
                             Mass_step.Add(i, f_t);
                         }
                         break;
-                   }
+                    }
                 case 1:
                     {
-                        if (Сheck(mass) & Checke(obpt_1, obpt_2, obpt_3, mass))
+                        mass_agent[0]--;
+                        if (Сheck(mass_agent) & Checke(obpt_1, obpt_2, obpt_3, mass_agent))
                         {
-                            mass[0]--;
-                            f_t = count_step + Calculation_heuristics(trpt_1, trpt_2, trpt_3, mass, f1, f2, f3);
+                            mass_f = Reaching_trpt(trpt_1, trpt_2, trpt_3, mass_agent, mass_f);
+                            f_t = count_step + Calculation_heuristics(trpt_1, trpt_2, trpt_3, mass_agent, mass_f[0], mass_f[1], mass_f[2], fnipt);
                             Mass_step.Add(i, f_t);
                         }
                         break;
                     }
                 case 2:
                     {
-                        if (Сheck(mass) & Checke(obpt_1, obpt_2, obpt_3, mass))
+                        mass_agent[1]--;
+                        if (Сheck(mass_agent) & Checke(obpt_1, obpt_2, obpt_3, mass_agent))
                         {
-                            mass[1]--;
-                            f_t = count_step + Calculation_heuristics(trpt_1, trpt_2, trpt_3, mass, f1, f2, f3);
+                            mass_f = Reaching_trpt(trpt_1, trpt_2, trpt_3, mass_agent, mass_f);
+                            f_t = count_step + Calculation_heuristics(trpt_1, trpt_2, trpt_3, mass_agent, mass_f[0], mass_f[1], mass_f[2], fnipt);
                             Mass_step.Add(i, f_t);
                         }
                         break;
                     }
                 case 3:
                     {
-                        if (Сheck(mass) & Checke(obpt_1, obpt_2, obpt_3, mass))
+                        mass_agent[0]++;
+                        if (Сheck(mass_agent) & Checke(obpt_1, obpt_2, obpt_3, mass_agent))
                         {
-                            mass[0]++;
-                            f_t = count_step + Calculation_heuristics(trpt_1, trpt_2, trpt_3, mass, f1, f2, f3);
+                            mass_f = Reaching_trpt(trpt_1, trpt_2, trpt_3, mass_agent, mass_f);
+                            f_t = count_step + Calculation_heuristics(trpt_1, trpt_2, trpt_3, mass_agent, mass_f[0], mass_f[1], mass_f[2], fnipt);
                             Mass_step.Add(i, f_t);
                         }
                         break;
@@ -270,39 +273,73 @@ class Algoritm_A
         }
         return Mass_step;
     }
-    private int  Min_f(Dictionary<int, double> Mass_step)
+    private int Min_f(Dictionary<int, double> Mass_step)
     {
-        double min_f = Mass_step[0];
-        int key=0;
-        for(int i=1; i<Mass_step.Count(); i++)
+        if (Mass_step.Count() == 0)
         {
-            if (Mass_step[i]<min_f)
+            return -1;
+        }
+        int[] mass_key = new int[Mass_step.Count()];
+        int j = 0;
+        for (int i = 0; i < 4; i++)
+        {
+            if (Mass_step.ContainsKey(i))
             {
-                min_f = Mass_step[i];
-                key = i;
+                mass_key[j] = i;
+                j++;
             }
         }
-        return key;
+        double min_f = Mass_step[mass_key[0]];
+        int key_min_f = mass_key[0];
+        //int count_similar = 0;
+        foreach (var key in mass_key)
+        {
+            if (Mass_step[key] < min_f)
+            {
+                min_f = Mass_step[key];
+                key_min_f = key;
+            }
+        }
+        return key_min_f;
+        /*List<int> key_similar=new List<int>();
+        foreach (var key in mass_key)
+        {
+            if (Mass_step[key_min_f] == Mass_step[key])
+            {
+                count_similar++;
+                key_similar.Add(key);
+            }
+        }
+        if (count_similar > 1) 
+        {
+
+        }
+        else 
+        {
+
+        }
+        */
     }
-    private void Reaching_trpt(double[] trpt_1, double[] trpt_2, double[] trpt_3, double[] agent,out bool f1, out bool f2, out bool f3)
+    private bool[] Reaching_trpt(double[] trpt_1, double[] trpt_2, double[] trpt_3, double[] agent, bool[] mass_f)
     {
-        if (trpt_1[0] == agent[0] & trpt_1[1] == agent[1])
-            f1 = true;
+        if ((trpt_1[0] == agent[0] & trpt_1[1] == agent[1]) | mass_f[0]==true)
+            mass_f[0] = true;
         else
-            f1 = false;
-        if (trpt_2[0] == agent[0] & trpt_2[1] == agent[1])
-            f2 = true;
+            mass_f[0] = false;
+        if ((trpt_2[0] == agent[0] & trpt_2[1] == agent[1]) | mass_f[1] == true)
+            mass_f[1] = true;
         else
-            f2 = false;
-        if (trpt_3[0] == agent[0] & trpt_3[1] == agent[1])
-            f3 = true;
+            mass_f[1] = false;
+        if ((trpt_3[0] == agent[0] & trpt_3[1] == agent[1]) | mass_f[2] == true)
+            mass_f[2] = true;
         else
-            f3 = false;
+            mass_f[2] = false;
+        return mass_f;
     }
-    private void show(List<string> result) 
+    private void show(List<string> result)
     {
         Console.WriteLine("Ходы чтобы пройти все целевые точки: ");
-        foreach(var str in result)
+        foreach (var str in result)
         {
             Console.Write(" " + str);
         }
@@ -312,49 +349,67 @@ class Algoritm_A
         int count_step = 0;
         Dictionary<int, double> Possibel_step = new Dictionary<int, double>();
         List<string> Step_result = new List<string>();
-        bool f1=false, f2=false, f3 = false;
+        bool[] mass_f = new bool[] { false, false, false };
         bool F = true;
+        trpt_1[0] = 1; trpt_1[1] = 4;
+        trpt_2[0] = 2; trpt_2[1] = 2;
+        trpt_3[0] = 4; trpt_3[1] = 3;
+        obpt_1[0] = 1; obpt_1[1] = 1;
+        obpt_2[0] = 1; obpt_2[1] = 2;
+        obpt_3[0] = 3; obpt_3[1] = 3;
+        agent[0] = 2; agent[1] = 4;
+        fnipt[0] = 1; fnipt[1] = 3;
+        
         while (F)
         {
-            Possibel_step = Price_step(obpt_1, obpt_2, obpt_3, trpt_1, trpt_2, trpt_3, agent, count_step,f1,f2,f3);
-            int key_min_f=Min_f(Possibel_step);
-            switch(key_min_f)
+            Possibel_step = Price_step(obpt_1, obpt_2, obpt_3, trpt_1, trpt_2, trpt_3, agent, count_step, mass_f[0], mass_f[1], mass_f[2], fnipt);
+            int key_min_f = Min_f(Possibel_step);
+            if (key_min_f == -1)
+            {
+                Console.WriteLine("Хьюстон, у нас проблемы. Решение невозможно, агент007 в западне.");
+                break;
+            }
+            switch (key_min_f)
             {
                 case 0:
                     {
                         agent[1]++;
-                        Reaching_trpt(trpt_1, trpt_2, trpt_3, agent, out f1, out f2, out f3);
+                        mass_f=Reaching_trpt(trpt_1, trpt_2, trpt_3, agent, mass_f);
                         Step_result.Add("Up");
+                        Console.WriteLine("Up");
                         count_step++;
                         break;
                     }
                 case 1:
                     {
                         agent[0]--;
-                        Reaching_trpt(trpt_1, trpt_2, trpt_3, agent, out f1, out f2, out f3);
+                        mass_f=Reaching_trpt(trpt_1, trpt_2, trpt_3, agent, mass_f);
                         Step_result.Add("Right");
+                        Console.WriteLine("Right");
                         count_step++;
                         break;
                     }
                 case 2:
                     {
                         agent[1]--;
-                        Reaching_trpt(trpt_1, trpt_2, trpt_3, agent, out f1, out f2, out f3);
+                        mass_f=Reaching_trpt(trpt_1, trpt_2, trpt_3, agent, mass_f);
                         Step_result.Add("Down");
+                        Console.WriteLine("Down");
                         count_step++;
                         break;
                     }
                 case 3:
                     {
                         agent[0]++;
-                        Reaching_trpt(trpt_1, trpt_2, trpt_3, agent, out f1, out f2, out f3);
+                        mass_f = Reaching_trpt(trpt_1, trpt_2, trpt_3, agent, mass_f);
                         Step_result.Add("Left");
+                        Console.WriteLine("Left");
                         count_step++;
                         break;
                     }
             }
-            if (f1 & f2 & f3)
-                F = true;
+            if (mass_f[0] & mass_f[1] & mass_f[2])
+                F = false;
         }
         show(Step_result);
     }
@@ -370,6 +425,4 @@ class project
         Final_point final_point = new Final_point(field.get(7));
         Algoritm_A algoritm = new Algoritm_A(field.get(0), field.get(1), field.get(2), field.get(3), field.get(4), field.get(5), field.get(6), field.get(7));
     }
-
-
 }
